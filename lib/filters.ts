@@ -105,7 +105,7 @@ export function applyAllFilters(files: FileInfo[], filters: FilterState): FileIn
  */
 export function calculateDimensionCounts(
   files: FileInfo[],
-  dimension: 'resolution_type' | 'caller_type' | 'primary_intent' | 'achieved' | 'transfer'
+  dimension: 'resolution_type' | 'caller_type' | 'primary_intent' | 'achieved' | 'transfer' | 'multi_case'
 ): Map<string, { count: number; duration: number }> {
   const counts = new Map<string, { count: number; duration: number }>();
 
@@ -132,6 +132,13 @@ export function calculateDimensionCounts(
         else if (file.transfer_success === false) key = 'failed';
         else key = 'no_transfer';
         break;
+      case 'multi_case': {
+        const multiCase = file.data?.call_summary?.multi_case_details;
+        if (multiCase === true) key = 'true';
+        else if (multiCase === false) key = 'false';
+        else key = 'unknown';
+        break;
+      }
     }
 
     const existing = counts.get(key) || { count: 0, duration: 0 };

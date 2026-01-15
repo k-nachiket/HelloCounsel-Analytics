@@ -36,6 +36,12 @@ function formatDuration(seconds: number): string {
   return `${secs}s`;
 }
 
+function formatCountWithPercent(count: number, total: number): string {
+  if (total === 0) return '0 | 0%';
+  const percent = Math.round((count / total) * 100);
+  return `${count} | ${percent}%`;
+}
+
 interface FilterSectionProps {
   title: string;
   children: React.ReactNode;
@@ -108,6 +114,10 @@ export function FilterSidebar() {
 
   const transferCounts = useMemo(() => {
     return calculateDimensionCounts(filteredFiles, 'transfer');
+  }, [filteredFiles]);
+
+  const multiCaseCounts = useMemo(() => {
+    return calculateDimensionCounts(filteredFiles, 'multi_case');
   }, [filteredFiles]);
 
   const handleResolutionTypeChange = (type: string, checked: boolean) => {
@@ -253,7 +263,7 @@ export function FilterSidebar() {
                       </Tooltip>
                     )}
                   </Label>
-                  <span className="text-xs text-muted-foreground">{count}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatCountWithPercent(count, filteredFiles.length)}</span>
                 </div>
               );
             })}
@@ -284,7 +294,7 @@ export function FilterSidebar() {
                   <Label htmlFor={`achieved-${status}`} className="flex-1 text-sm cursor-pointer capitalize">
                     {status}
                   </Label>
-                  <span className="text-xs text-muted-foreground">{count}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatCountWithPercent(count, filteredFiles.length)}</span>
                 </div>
               );
             })}
@@ -326,7 +336,7 @@ export function FilterSidebar() {
                       </Tooltip>
                     )}
                   </Label>
-                  <span className="text-xs text-muted-foreground">{count}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatCountWithPercent(count, filteredFiles.length)}</span>
                 </div>
               );
             })}
@@ -361,7 +371,7 @@ export function FilterSidebar() {
                   <Label htmlFor={`transfer-${value}`} className="flex-1 text-sm cursor-pointer">
                     {label}
                   </Label>
-                  <span className="text-xs text-muted-foreground">{count}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatCountWithPercent(count, filteredFiles.length)}</span>
                 </div>
               );
             })}
@@ -401,20 +411,24 @@ export function FilterSidebar() {
               { value: 'true' as MultiCaseStatus, label: 'True' },
               { value: 'false' as MultiCaseStatus, label: 'False' },
               { value: 'unknown' as MultiCaseStatus, label: 'Unknown' },
-            ]).map(({ value, label }) => (
-              <div key={value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`multicase-${value}`}
-                  checked={filters.multiCase.includes(value)}
-                  onCheckedChange={(checked) =>
-                    handleMultiCaseChange(value, checked as boolean)
-                  }
-                />
-                <Label htmlFor={`multicase-${value}`} className="flex-1 text-sm cursor-pointer">
-                  {label}
-                </Label>
-              </div>
-            ))}
+            ]).map(({ value, label }) => {
+              const count = multiCaseCounts.get(value)?.count || 0;
+              return (
+                <div key={value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`multicase-${value}`}
+                    checked={filters.multiCase.includes(value)}
+                    onCheckedChange={(checked) =>
+                      handleMultiCaseChange(value, checked as boolean)
+                    }
+                  />
+                  <Label htmlFor={`multicase-${value}`} className="flex-1 text-sm cursor-pointer">
+                    {label}
+                  </Label>
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatCountWithPercent(count, filteredFiles.length)}</span>
+                </div>
+              );
+            })}
           </div>
         </FilterSection>
         </div>
